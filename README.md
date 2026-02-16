@@ -25,7 +25,4 @@ All sensitive data, IPs, and identifiers are sanitized.
 
 ---
 
-## High-Level Architecture
-
-A simplified representation of the lab environment:
 
