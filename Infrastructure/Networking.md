@@ -50,3 +50,7 @@ This document describes the network architecture of the HuntWired homelab.
 - DNS
 - Routing
 - VLAN Segmentation
+
+## Related Diagrams
+
+- [Network Topology](../Diagrams/README.md)
