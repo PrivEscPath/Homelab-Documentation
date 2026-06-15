@@ -10,7 +10,7 @@ All sensitive information, IP addressing, and identifying details are sanitized.
 
 ## High-Level Architecture
 
-![Lab Architecture](lab-architecture.png)
+![Network Topology](Diagrams/Network-Topology.png)
 
 ---
 
