@@ -1,23 +1,18 @@
 # Diagrams
 
-This directory contains architecture, topology, and infrastructure diagrams for the HuntWired homelab environment.
+## Physical Infrastructure
 
-## Available Diagrams
+### Rack Diagram
 
-### Physical Infrastructure
+![Rack Diagram](Rack-Diagram.png)
 
-#### Rack Diagram
+### Network Topology
 
-![Physical Rack Diagram](Rack-Diagram.png)
+![Network Topology](Network-Topology.png)
 
-### Planned Diagrams
+## Planned Diagrams
 
-* Network Topology
-* VLAN Architecture
-* Active Directory Architecture
-* Storage Architecture
-* Monitoring Architecture
-
-## Purpose
-
-These diagrams provide visual documentation of the homelab environment and complement the written documentation found within the Infrastructure section of this repository.
+- VLAN Architecture
+- Active Directory Architecture
+- Storage Architecture
+- Monitoring Architecture
