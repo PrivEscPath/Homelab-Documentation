@@ -6,7 +6,6 @@ This document describes the Active Directory environment used within the HuntWir
 
 ## Domain Information
 
-- Domain: ad.huntwired.com
 - Active Directory Integrated DNS
 - Windows Server 2022
 
