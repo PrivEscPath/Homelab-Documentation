@@ -27,14 +27,15 @@ This document describes the network architecture of the HuntWired homelab.
 |--------|----------|
 | 10 | Main WiFi |
 | 20 | IoT / Son Devices |
-| 30 | Guest |
+| 30 | Guest WIFI |
 | 40 | TVs |
-| 50 | Infrastructure |
+| 50 | Proxmox |
 | 60 | Storage |
 | 70 | Jellyfin |
-| 90 | Administration |
+| 90 | Home PC's and Laptops |
 | 100 | Active Directory |
 | 999 | Management |
+| 120 | Monitoring/Logging |
 
 ## Security Controls
 
