@@ -6,7 +6,9 @@ This directory contains architecture, topology, and infrastructure diagrams for 
 
 ### Physical Infrastructure
 
-* Rack Diagram
+#### Rack Diagram
+
+![Physical Rack Diagram](Rack-Diagram.png)
 
 ### Planned Diagrams
 
