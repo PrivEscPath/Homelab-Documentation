@@ -27,3 +27,7 @@ This section documents the core home lab infrastructure build.
 - [Backups](./Backups.md)
 - [Remote Access](./Remote-Access.md)
 - [Media Server](./Media-Server.md)
+
+## Diagrams
+
+- [Infrastructure Diagrams](../Diagrams/README.md)
