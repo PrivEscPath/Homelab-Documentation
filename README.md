@@ -1,10 +1,10 @@
-# Homelab Documentation
+# HuntWired Homelab | Infrastructure & Security Engineering
 
-Professional documentation of a segmented home infrastructure environment built to simulate enterprise architecture and security testing scenarios.
+A self-hosted infrastructure environment designed to develop and demonstrate practical experience in **network engineering, systems administration, cybersecurity, virtualization, and infrastructure operations**.
 
-This repository outlines the design, segmentation strategy, and security-focused lab environments used to develop and validate infrastructure hardening and attack simulation techniques.
+This repository documents the architecture, implementation, administration, and troubleshooting of an enterprise-inspired homelab built using physical servers, virtualization, network segmentation, security controls, and centralized monitoring.
 
-All sensitive information, IP addressing, and identifying details are sanitized.
+The environment is actively maintained and expanded to support technical learning, experimentation, and professional development.
 
 ---
 
@@ -12,111 +12,145 @@ All sensitive information, IP addressing, and identifying details are sanitized.
 
 ![Network Topology](Diagrams/Network-Topology.png)
 
+*Architecture note: This diagram represents a simplified snapshot of the homelab infrastructure. It illustrates the core network architecture and major systems rather than an exhaustive, continuously updated inventory. Individual services, software versions, and workloads may change as the environment evolves. Refer to the infrastructure documentation for more detailed and current information.*
+
+## Infrastructure at a Glance
+
+| Technology | Implementation |
+|---|---|
+| Networking | Cisco Catalyst 3850, Layer 3 routing, VLAN segmentation, ACLs |
+| Perimeter Security | Fortinet FortiGate |
+| Virtualization | Proxmox VE |
+| Storage | TrueNAS SCALE, ZFS, iSCSI, SMB, NFS |
+| Identity Services | Windows Server Active Directory, DNS, Group Policy |
+| Backup & Recovery | Veeam Backup & Replication |
+| Monitoring | Prometheus, Grafana, Uptime Kuma |
+| Remote Access | Tailscale, Cloudflare Tunnel, AnyDesk |
+| Linux Administration | Debian, Ubuntu Server |
+| Media Infrastructure | Dedicated bare-metal Jellyfin server |
+| Network Simulation | GNS3 with virtual networking appliances |
+| Automation | Ansible in Docker — development in progress |
+| Security Monitoring | Splunk Enterprise — log ingestion pending |
+
 ---
 
 ## Architecture Overview
 
-The lab environment is designed to model a layered enterprise network while maintaining controlled isolation for security experimentation.
+The homelab uses a layered network architecture with dedicated segments for infrastructure, management, storage, media services, endpoints, and security testing.
 
-Traffic flow begins at the ISP edge and passes through a Fortigate firewall before reaching a Cisco Layer 3 switch responsible for VLAN segmentation and inter-VLAN routing.
+### Networking and Security
 
-The Proxmox virtualization cluster is connected via VLAN 10 and hosts multiple virtual machines, including:
+A Fortinet FortiGate provides perimeter security and external connectivity.
 
-- Active Directory Domain Controller
-- Windows client systems
-- Kali Linux attacker workstation
-- Additional infrastructure test systems
+The Cisco Catalyst 3850 core switch performs internal Layer 3 routing and enforces inter-VLAN access restrictions through access control lists (ACLs).
 
-### AD Lab Isolation
+This architecture separates management and infrastructure resources from general-purpose endpoints and other workloads.
 
-The Active Directory security lab is further segmented using an internal Proxmox bridge (`vmbr1`) with no external routing. This allows controlled attack simulation without exposing the lab network to the internet.
+### Compute and Virtualization
 
-Kali Linux is intentionally dual-homed to simulate realistic attacker positioning:
+Proxmox VE hosts Windows and Linux infrastructure services, including Active Directory, backup infrastructure, and network simulation workloads.
 
-- Connected to the isolated AD lab bridge for lateral movement testing
-- Connected to VLAN 10 for tool updates and controlled internet access
+Dedicated physical servers provide storage and media services independently of the primary virtualization environment.
 
-### Storage Segmentation
+### Storage and Data Protection
 
-Storage infrastructure is isolated on VLAN 20, separating data traffic from compute and application workloads.
+TrueNAS SCALE provides centralized storage using ZFS and multiple storage protocols.
 
-### Service Segmentation
+Veeam Backup & Replication provides scheduled backups for supported virtual infrastructure, with recovery testing that includes full virtual machine restoration and file-level recovery.
 
-Media services are placed on VLAN 30 to prevent unnecessary lateral exposure between entertainment workloads and core lab infrastructure.
+### Monitoring and Operations
 
-This layered segmentation approach enforces routing boundaries and reduces attack surface across functional tiers.
+A dedicated ZimaBoard hosts Docker-based monitoring services, including Prometheus, Grafana, and Uptime Kuma.
 
----
+These services provide performance metrics, dashboards, and service availability monitoring.
 
-## Security Controls Implemented
+### Remote Administration
 
-The lab environment incorporates layered security controls aligned with enterprise best practices:
+Remote administration uses Tailscale subnet routing, Cloudflare Tunnel application publishing, and AnyDesk access to a management workstation.
 
-- VLAN-based segmentation between compute, storage, and service tiers
-- Hypervisor-level internal bridge isolation for AD testing
-- Controlled dual-homing for attack simulation realism
-- Firewall-enforced routing boundaries
-- Separation of storage traffic from application workloads
-- Principle of least privilege within AD test environment
-- Tiered logical separation between infrastructure and service systems
-
-This design enables safe simulation of offensive techniques while preserving infrastructure integrity.
+Cisco ACLs restrict administrative connectivity between network segments.
 
 ---
 
-## Security Lab Scope
+## Infrastructure Documentation
 
-The security lab environment supports:
+Each section documents deployed systems, architectural decisions, administration, and troubleshooting.
 
-- Active Directory deployment and configuration
-- Kerberos attack simulation
-- Credential attack testing
-- Privilege escalation validation
-- Defensive control evaluation
-- Structured documentation of findings and mitigations
-
-Documentation for lab builds and hardening analysis can be found in the `Security-Lab` directory.
+| Section | Description |
+|---|---|
+| [Networking](Infrastructure/Networking.md) | Cisco switching, routing, VLANs, ACLs, and segmentation |
+| [Virtualization](Infrastructure/Virtualization.md) | Proxmox infrastructure and virtualized workloads |
+| [Storage](Infrastructure/Storage.md) | TrueNAS SCALE, ZFS, storage protocols, and capacity management |
+| [Active Directory](Infrastructure/Active-Directory.md) | Windows Server identity services, DNS, and Group Policy |
+| [Backups](Infrastructure/Backups.md) | Veeam backup architecture, scheduling, retention, and recovery testing |
+| [Monitoring](Infrastructure/Monitoring.md) | Prometheus, Grafana, exporters, and Uptime Kuma |
+| [Remote Access](Infrastructure/Remote-Access.md) | Tailscale, Cloudflare Tunnel, AnyDesk, and administrative access |
+| [Media Server](Infrastructure/Media-Server.md) | Debian, Jellyfin, storage, user management, and monitoring |
+| [Automation / Ansible](Infrastructure/Automation/Ansible/README.md) | Ansible deployment, existing playbooks, and planned automation development |
 
 ---
 
-## Infrastructure Scope
+## Security Engineering Approach
 
-The broader infrastructure environment includes:
+Security is incorporated throughout the infrastructure rather than treated as a standalone component.
 
-- Multi-node Proxmox virtualization cluster
-- Layer 3 switching with VLAN segmentation
-- Firewall boundary enforcement
-- Segmented storage architecture
-- Service tier isolation
+Key areas include:
 
-Build documentation and infrastructure notes are maintained in the `Infrastructure` directory.
+- Network segmentation and restrictive inter-VLAN ACLs
+- Separation of management and application workloads
+- Controlled remote administrative access
+- Active Directory identity and access management
+- Backup and recovery validation
+- Infrastructure monitoring and troubleshooting
+- Isolated environments for network and security experimentation
+- Defensive infrastructure design and evaluation
+
+The homelab also supports the development of offensive security skills through controlled testing and network simulation.
 
 ---
 
 ## Skills Demonstrated
 
-This repository reflects hands-on experience with:
+**Network Engineering:** Cisco switching, VLAN architecture, inter-VLAN routing, access control, troubleshooting, and Fortinet firewall administration.
 
-- Network segmentation and VLAN design
-- Firewall boundary planning
-- Hypervisor networking configuration (Proxmox)
-- Active Directory lab deployment
-- Kerberos attack path simulation
-- Infrastructure hardening analysis
-- Enterprise-style architecture modeling
-- Technical documentation and structured reporting
+**Systems Engineering:** Windows Server, Linux, Active Directory, virtualization, storage infrastructure, and service deployment.
+
+**Infrastructure Reliability:** Backup scheduling, recovery testing, monitoring, performance troubleshooting, and capacity planning.
+
+**Cybersecurity Engineering:** Network isolation, access restrictions, remote administration, security testing, and defensive infrastructure design.
+
+**Automation and Tooling:** Docker, Ansible, monitoring integrations, and developing repeatable administration workflows.
+
+---
+
+## Current Development
+
+The environment continues to evolve through practical projects and ongoing technical development.
+
+Current and planned areas include:
+
+- Expanding GNS3 network simulation and security testing
+- Configuring Splunk Enterprise log ingestion and security monitoring
+- Rebuilding and validating Ansible automation
+- Improving operational monitoring and alerting
+- Developing additional network and cybersecurity engineering projects
+
+Projects under development are documented according to their verified implementation status.
+
+---
+
+## Documentation and Security
+
+This repository demonstrates technical architecture and engineering decisions without intentionally exposing unnecessary details about the live environment.
+
+Public documentation omits credentials, private network addressing, externally accessible service hostnames, and sensitive configuration details.
+
+Configuration examples and architectural descriptions are provided for educational and portfolio purposes.
 
 ---
 
 ## Purpose
 
-This homelab environment exists to:
+This homelab supports continuous professional development in infrastructure engineering, network security, and penetration testing.
 
-- Develop practical security engineering skills
-- Validate segmentation and isolation strategies
-- Simulate realistic attack paths in controlled conditions
-- Translate offensive techniques into defensive improvements
-- Strengthen infrastructure design and documentation discipline
-
-
-
+Its primary purpose is to translate technical knowledge into practical experience through deployment, administration, troubleshooting, security evaluation, and technical documentation.
