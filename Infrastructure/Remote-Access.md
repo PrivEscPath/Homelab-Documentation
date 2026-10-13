@@ -2,34 +2,40 @@
 
 ## Overview
 
-The HuntWired homelab uses multiple remote-access technologies to provide secure administration, private network connectivity, and externally accessible applications.
+The HuntWired homelab uses multiple remote-access technologies to provide private network connectivity, remote infrastructure administration, and externally accessible applications.
 
-The architecture combines Tailscale, Cloudflare Tunnel, and AnyDesk to support different access requirements while maintaining restrictive internal network access controls.
+The architecture combines **Tailscale, Cloudflare Tunnel, AnyDesk, and Cisco network ACLs** to support different access requirements while maintaining internal network segmentation.
 
 The primary design objectives are:
 
-- Enable remote infrastructure administration
+- Enable remote administration of homelab infrastructure
 - Minimize unnecessary inbound firewall exposure
-- Restrict management access through network ACLs
+- Restrict management access to authorized devices
 - Provide encrypted connectivity to internal networks
 - Publish selected web applications
-- Support administration from mobile devices
-- Separate public-facing services from administrative access
+- Support remote administration from mobile devices
+- Separate public-facing services from infrastructure management
+
+Public hostnames, internal addressing, subnet ranges, and detailed access-control rules are intentionally excluded from this documentation.
 
 ## Remote Access Architecture
 
 | Technology | Primary Function | Access Method |
 |---|---|---|
-| Tailscale | Private network connectivity | Encrypted mesh VPN and subnet routing |
+| Tailscale | Private network connectivity | Encrypted VPN and subnet routing |
 | Cloudflare Tunnel | External application publishing | HTTPS through Cloudflare |
 | AnyDesk | Remote desktop administration | Remote control of management workstation |
-| Cisco Catalyst 3850 ACLs | Internal network segmentation | Layer 3 access restrictions |
+| Cisco Catalyst 3850 | Internal network segmentation | Layer 3 ACL-based access restrictions |
 
-These technologies serve complementary purposes rather than providing identical access methods.
+Each technology serves a distinct purpose.
+
+Tailscale provides private network connectivity, Cloudflare Tunnel publishes selected applications, and AnyDesk provides remote control of the primary management workstation.
+
+The Cisco core switch enforces internal network access restrictions.
 
 ## Tailscale
 
-Tailscale provides encrypted private connectivity between authorized devices and selected homelab networks.
+Tailscale provides encrypted private connectivity between authorized devices and selected internal homelab networks.
 
 ### Enrolled Devices
 
@@ -41,29 +47,27 @@ Three devices are enrolled in the Tailscale network:
 
 ### ZimaBoard Subnet Router
 
-The ZimaBoard functions as a Tailscale subnet router, advertising internal homelab networks to authorized remote clients.
+The ZimaBoard functions as a Tailscale subnet router, advertising five internal homelab networks to authorized remote clients.
 
-The following subnet routes have been configured and approved:
+The approved routes cover infrastructure such as:
 
-| Advertised Subnet | Purpose |
-|---|---|
-| 10.0.50.0/24 | Proxmox infrastructure |
-| 10.0.60.0/24 | Internal storage network |
-| 10.0.99.0/24 | Internal network |
-| 10.0.100.0/24 | Server infrastructure |
-| 10.0.120.0/24 | ZimaBoard and monitoring infrastructure |
+- Virtualization systems
+- Storage infrastructure
+- Internal servers
+- Administrative resources
+- Monitoring services
 
-Approved subnet routes provide a path to internal networks without requiring Tailscale to be installed on every individual server.
+This design allows remote clients to reach selected internal networks without installing Tailscale on every server.
 
-Actual access remains subject to client routing, Tailscale policy, and internal network ACLs.
+Route approval alone does not grant unrestricted access. Connectivity remains subject to Tailscale policies, client routing, and internal network ACLs.
 
 ### Design Benefits
 
 - Encrypted connectivity between enrolled devices
 - Remote access without exposing individual management ports
 - Centralized subnet routing through the ZimaBoard
-- Reduced need for individual VPN clients on infrastructure systems
-- Access to multiple internal VLANs through a single routing device
+- Reduced need for VPN software on individual infrastructure systems
+- Access to multiple internal networks through a single routing device
 
 ## Cloudflare Tunnel
 
@@ -73,32 +77,36 @@ The tunnel establishes outbound connectivity to Cloudflare, allowing published a
 
 ### Published Applications
 
-| Application | Internal Destination | Purpose |
-|---|---|---|
-| Proxmox VE | 10.0.50.2:8006 | Virtualization management |
-| Jellyfin | 10.0.70.2:8096 | Media streaming |
-| TrueNAS SCALE | 10.0.60.2 | Storage management |
-| Dashy | 10.0.50.5:4000 | Experimental homelab landing page |
-| GNS3 | 10.0.55.2:3080 | Network lab management |
-| Uptime Kuma | 10.0.120.2:3001 | Service availability status page |
-| Apache Guacamole | 10.0.55.100:8080 | Browser-based VNC console access for GNS3 |
-| Grafana | 10.0.120.2:3000 | Infrastructure monitoring dashboards |
-
 Eight application routes are configured.
+
+| Application | Purpose |
+|---|---|
+| Proxmox VE | Virtualization management |
+| Jellyfin | Remote media streaming |
+| TrueNAS SCALE | Storage administration |
+| Dashy | Experimental homelab landing page |
+| GNS3 | Network simulation and lab management |
+| Uptime Kuma | Service availability reporting |
+| Apache Guacamole | Browser-based VNC console access for GNS3 |
+| Grafana | Infrastructure monitoring dashboards |
 
 ### Application Use Cases
 
 **Infrastructure Management**
 
-Proxmox and TrueNAS web interfaces provide remote access to virtualization and storage management functionality.
+Proxmox and TrueNAS provide browser-based interfaces for virtualization and storage administration.
 
 **Network Lab Administration**
 
-GNS3 provides a remotely accessible network simulation environment. Apache Guacamole supports browser-based access to VNC consoles associated with the lab.
+GNS3 provides a remotely accessible network simulation environment.
+
+Apache Guacamole provides browser-based VNC console access for devices within the GNS3 lab.
 
 **Monitoring**
 
-Grafana provides access to infrastructure performance dashboards, while Uptime Kuma provides a status page that family and friends can use to check Jellyfin service availability.
+Grafana provides access to infrastructure performance dashboards.
+
+Uptime Kuma provides a status page that family and friends can use to check service availability.
 
 **Media Services**
 
@@ -110,15 +118,26 @@ Dashy was deployed as an experimental centralized landing page. Development is c
 
 ### Security Architecture
 
-Cloudflare Tunnel reduces the need to expose internal web services through inbound port forwarding.
+Cloudflare Tunnel reduces the need to expose internal services through inbound firewall port forwarding.
 
 However, tunnel publishing and application authentication are separate security functions.
 
-Cloudflare Access application policies have not yet been implemented. Published services currently depend on their respective application-level authentication and security configurations.
+Cloudflare Access application policies have not yet been implemented.
 
-For example, Grafana uses its native login page for authentication.
+Published services currently depend on their respective application-level authentication and security configurations.
 
-Future improvements may include adding Cloudflare Access policies to sensitive management applications.
+For example, Grafana uses its native login interface.
+
+### Security Considerations
+
+Future security improvements may include:
+
+- Evaluating Cloudflare Access for administrative applications
+- Implementing additional authentication controls
+- Reviewing application-level permissions
+- Restricting access to sensitive management interfaces
+- Periodically auditing published services
+- Reviewing the necessity of each externally accessible application
 
 ## AnyDesk
 
@@ -131,39 +150,41 @@ AnyDesk is installed on:
 - Personal management laptop
 - Mobile phone
 
-### Management Workstation Design
+### Management Workstation Architecture
 
-The management laptop is the primary administrative workstation for the homelab.
+The management laptop serves as the primary administrative workstation for the homelab.
 
-Restrictive network ACLs limit management connectivity to authorized systems, with the management laptop permitted to access infrastructure that is not broadly accessible from other network segments.
+Restrictive Cisco ACLs limit management connectivity between internal network segments.
+
+The management laptop is permitted to access infrastructure resources that are not broadly accessible from other devices.
 
 When away from home, AnyDesk allows remote control of the management laptop from the phone.
 
-This enables administration through the existing authorized workstation rather than requiring the phone to have equivalent direct management access to every internal system.
+This provides an administrative access path through an already authorized workstation rather than requiring unrestricted direct management access from mobile devices.
 
 ### Administrative Access Workflow
 
 1. Establish an AnyDesk session from the remote device.
 2. Connect to the management laptop.
-3. Use the laptop's existing management connectivity.
-4. Access authorized infrastructure management interfaces.
+3. Use the laptop's existing authorized network connectivity.
+4. Access permitted infrastructure management interfaces.
 5. Perform administrative tasks through the established workstation.
 
-This arrangement effectively makes the management laptop a remote administration jump workstation.
+The management laptop effectively functions as a remote administration jump workstation.
 
 ### Security Considerations
 
-Because the management laptop has elevated network access, its security is particularly important.
+Because the management laptop has elevated network access, protecting the workstation and its remote-access configuration is especially important.
 
-Relevant protections include:
+Recommended controls include:
 
-- Strong AnyDesk authentication
+- Strong authentication
 - Multifactor authentication where supported
 - Restricting unattended remote access
-- Keeping the management laptop patched
+- Keeping the workstation and remote-access software updated
 - Limiting administrative privileges
 - Reviewing remote-access permissions
-- Maintaining restrictive Cisco network ACLs
+- Maintaining restrictive network ACLs
 
 A future dedicated travel laptop may provide a more convenient remote administration endpoint.
 
@@ -173,17 +194,36 @@ Internal VLAN routing and access control are handled by the Cisco Catalyst 3850 
 
 The FortiGate provides perimeter security, while the Catalyst switch enforces internal Layer 3 access restrictions.
 
-This separation is important because remote-access connectivity does not automatically imply unrestricted permission to reach every internal system.
-
 ### Administrative Access Principles
 
 - Restrict management interfaces to authorized sources
-- Maintain separation between user, server, and infrastructure VLANs
+- Maintain separation between user, server, and infrastructure networks
 - Use a designated management workstation
-- Limit access between internal network segments
-- Provide remote connectivity without broadly opening internal management services
+- Limit communication between internal network segments
+- Avoid unnecessarily exposing management services
+- Preserve network segmentation when implementing remote access
 
-Tailscale subnet routing, Cloudflare application publishing, and AnyDesk remote control provide different access paths that must be evaluated against these restrictions.
+### Defense-in-Depth Considerations
+
+The remote-access architecture uses several complementary mechanisms:
+
+**Private Connectivity**
+
+Tailscale provides encrypted connectivity to enrolled devices and approved internal networks.
+
+**Application Publishing**
+
+Cloudflare Tunnel provides externally accessible application routes without traditional inbound port forwarding.
+
+**Administrative Workstation**
+
+AnyDesk enables remote control of the management laptop, which already has authorized management connectivity.
+
+**Internal Access Restrictions**
+
+Cisco ACLs enforce traffic restrictions between internal network segments.
+
+These mechanisms provide different access paths and should not be treated as interchangeable security controls.
 
 ## Operational Use Cases
 
@@ -193,11 +233,11 @@ Use AnyDesk to access the management workstation and administer infrastructure t
 
 ### Private Network Access
 
-Use Tailscale to establish encrypted connectivity to enrolled devices and approved internal subnets.
+Use Tailscale to establish encrypted connectivity to enrolled devices and approved internal networks.
 
 ### Remote GNS3 Access
 
-Access the GNS3 web interface through its Cloudflare-published hostname and use the Guacamole gateway for browser-based VNC console access.
+Access the GNS3 web interface through Cloudflare Tunnel and use Apache Guacamole for browser-based VNC console access.
 
 ### Remote Monitoring
 
@@ -209,17 +249,17 @@ Provide Jellyfin users with a published Uptime Kuma status page to independently
 
 ### Remote Media Streaming
 
-Provide authorized family members and friends with access to the Jellyfin media server through Cloudflare Tunnel.
+Provide authorized family members and friends with remote access to the Jellyfin media server.
 
 ## Future Improvements
 
 - Evaluate Cloudflare Access policies for sensitive management applications
 - Review authentication and authorization across published services
 - Evaluate additional Tailscale access restrictions
-- Review the security of the AnyDesk management workstation
+- Review AnyDesk security and management workstation protections
 - Acquire a dedicated travel laptop for remote administration
 - Revisit the centralized Dashy landing-page project when higher-priority work is complete
-- Document additional access control and security validation procedures
+- Document additional access-control validation and security testing procedures
 
 ## Technical Skills Demonstrated
 
