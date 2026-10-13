@@ -1,5 +1,20 @@
-[proxmox_nodes]
-Prox1 10.0.50.2
-Prox2 10.0.50.3
 
-//More to come, this was just the initial build.
+# HuntWired Homelab - Ansible Inventory
+#
+# Status: Work in Progress
+#
+# The original inventory was created for an older Proxmox
+# infrastructure deployment.
+#
+# Ansible has since been migrated to Docker on the ZimaBoard.
+# Managed hosts and connection settings will be rebuilt and
+# validated against the current infrastructure.
+#
+# Actual hostnames, IP addresses, and credentials are excluded
+# from this public repository.
+
+[proxmox_nodes]
+# Hosts will be added after validation.
+
+[linux_servers]
+# Hosts will be added as automation coverage expands.
