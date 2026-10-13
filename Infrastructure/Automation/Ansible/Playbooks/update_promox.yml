@@ -1,45 +1,52 @@
-- name: Update Proxmox Nodes
-hosts: proxmox_nodes
-Serial: 1
 
-tasks
+---
+# HuntWired Homelab
+# Legacy Proxmox Maintenance Playbook
+#
+# Status: Work in Progress / Not Validated
+#
+# Originally developed for an earlier Ansible deployment.
+# Requires testing against the current infrastructure.
+#
+# WARNING:
+# This playbook performs package upgrades and may reboot hosts.
+# Do not execute without validating the inventory and maintenance window.
 
-  - name: Print update start time
-    shell: date
-    register: starttime
-    changed_when: false
+- name: Update Proxmox nodes
+  hosts: proxmox_nodes
+  become: true
+  serial: 1
 
-    -debug:
-      msg: "Starting apt update at {{ starttime.stdout }}"
+  tasks:
+    - name: Record update start time
+      ansible.builtin.command: date
+      register: starttime
+      changed_when: false
 
-  - name: Update apt cache
-    apt:
-      update_cache: yes
+    - name: Display update start time
+      ansible.builtin.debug:
+        msg: "Starting APT update at {{ starttime.stdout }}"
 
-  - name: Print upgrade start time
-    shell: date
-    register: upgradetime
-    changed_when: false
+    - name: Update APT cache
+      ansible.builtin.apt:
+        update_cache: true
 
-  - debug:
-      msg: "Starting apt upgrade at {{ upgradetime.stdout }}"
+    - name: Upgrade installed packages
+      ansible.builtin.apt:
+        upgrade: dist
 
-  - name: Upgrade packages
-    apt:
-      upgrade: dist
-      
-  - name: Remove unused pachages
-    apt:
-      autoremove: yes
+    - name: Remove unused packages
+      ansible.builtin.apt:
+        autoremove: true
 
-  - name: check if reboot is required
-    stat:
-      path: /var/run/reboot_required
-    register: reboot_required
+    - name: Check whether reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
 
-  - name: reboot node if required
-    reboot:
-      msg: "Reboot initiated by Ansible after updates"
-      connect_timeout: 5
-      reboot_timeout: 600
-    when: reboot_required.stat.exists
+    - name: Reboot if required
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible after updates"
+        connect_timeout: 5
+        reboot_timeout: 600
+      when: reboot_required.stat.exists
